@@ -1,0 +1,15 @@
+def open_notepad():
+    # Открываем блокнот
+    subprocess.Popen(["notepad.exe"])
+    speak("Блокнот открыт.")
+def insert_text_in_document():
+    # Распознаем речь
+    text = recognize_speech()
+    if text:
+        # Отправляем распознанный текст в текстовый документ
+        pyautogui.typewrite(text)
+        speak("Текст вставлен.")
+elif "блокнот"==command:
+        open_notepad()
+    elif "напиши" in command:
+        insert_text_in_document()

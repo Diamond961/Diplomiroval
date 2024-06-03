@@ -1,0 +1,91 @@
+Вот функции для открытия текстового документа и блокнота с возможностью вставки текста через голосовой ввод на Python:
+python
+import os
+import wave
+import vosk
+import json
+import pyttsx3
+import subprocess
+
+# Функция для преобразования текста в речь
+def speak(text):
+    engine = pyttsx3.init()
+    voices = engine.getProperty('voices')
+    engine.setProperty('voice', voices[0].id)  # Выбор голоса (0 - мужской, 1 - женский)
+    engine.say(text)
+    engine.runAndWait()
+
+# Функция для распознавания речи
+def recognize_speech():
+    # Инициализируем модель Vosk для русского языка
+    model = vosk.Model("vosk-model-small-ru-0.22")
+    
+    # Создаем объект распознавания речи
+    rec = vosk.KaldiRecognizer(model, 16000)
+    
+    # Открываем микрофон
+    p = pyaudio.PyAudio()
+    stream = p.open(format=pyaudio.paInt16,
+                    channels=1,
+                    rate=16000,
+                    input=True,
+                    frames_per_buffer=8000)
+    
+    # Распознаем речь
+    while True:
+        data = stream.read(4000)
+        if len(data) == 0:
+            break
+        if rec.AcceptWaveform(data):
+            result = json.loads(rec.Result())
+            text = result["text"]
+            print("Вы сказали: " + text)
+            if "стоп" in text.lower():
+                break
+            return text
+    
+    # Закрываем микрофон
+    stream.stop_stream()
+    stream.close()
+    p.terminate()
+    return None
+
+# Функция для открытия текстового документа
+def open_text_document():
+    # Открываем текстовый редактор (например, Notepad)
+    subprocess.Popen(["notepad.exe"])
+    speak("Текстовый документ открыт.")
+
+# Функция для вставки текста в текстовый документ
+def insert_text_in_document():
+    # Распознаем речь
+    text = recognize_speech()
+    if text:
+        # Отправляем распознанный текст в текстовый документ
+        pyautogui.typewrite(text)
+        speak("Текст вставлен.")
+
+# Функция для открытия блокнота
+def open_notepad():
+    # Открываем блокнот
+    subprocess.Popen(["notepad.exe"])
+    speak("Блокнот открыт.")
+
+# Пример использования
+open_text_document()
+insert_text_in_document()
+open_notepad()
+insert_text_in_document()
+
+Вот как работает этот код:
+Функция speak() использует библиотеку pyttsx3 для преобразования текста в речь.
+Функция recognize_speech() использует библиотеку Vosk для распознавания речи на русском языке. Она открывает микрофон, распознает речь и возвращает распознанный текст.
+Функция open_text_document() открывает текстовый редактор (в данном случае Notepad) с помощью subprocess.Popen().
+Функция insert_text_in_document() распознает речь с помощью recognize_speech() и вставляет распознанный текст в открытый текстовый документ с помощью pyautogui.typewrite().
+Функция open_notepad() открывает блокнот с помощью subprocess.Popen().
+В примере использования мы последовательно вызываем функции open_text_document(), insert_text_in_document(), open_notepad() и insert_text_in_document().
+Обратите внимание, что для работы этого кода вам потребуется установить следующие библиотеки:
+pyttsx3 для преобразования текста в речь
+pyautogui для управления клавиатурой и мышью
+pyaudio для работы с микрофоном
+Скачать и распаковать модель Vosk для русского языка в директорию vosk-model-small-ru-0.22 в той же директории, где находится ваш Python-скрипт.
